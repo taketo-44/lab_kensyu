@@ -5,6 +5,7 @@ from AES import add, mult, sub_bytes, inv_sub_bytes, shift_rows, inv_shift_rows,
 
 class TestAESBackward(unittest.TestCase):
     def setUp(self):
+        # From FIPS-197 Appendix C.1
         #69c4e0d86a7b0430d8cdb78070b4c55a
         self.crypted_block = [
             0x69, 0xc4, 0xe0, 0xd8,
@@ -68,6 +69,13 @@ class TestAESBackward(unittest.TestCase):
             0x88, 0x99, 0xaa, 0xbb,
             0xcc, 0xdd, 0xee, 0xff
         ]
+
+        self.expected_key = [
+            0x00, 0x01, 0x02, 0x03,
+            0x04, 0x05, 0x06, 0x07,
+            0x08, 0x09, 0x0A, 0x0B,
+            0x0C, 0x0D, 0x0E, 0x0F
+        ]
             
     def _make_state(self, flat):
         return [[flat[r + 4*c] for c in range(Nb)] for r in range(Nb)]
@@ -84,26 +92,26 @@ class TestAESBackward(unittest.TestCase):
     
     def test_inv_shift_rows(self):
         state = self._make_state(self.expected_after_inv_add_round_key)
-        inv_shift_rows(state)
+        state = inv_shift_rows(state)
         result = self._flatten_state(state)
         self.assertEqual(result, self.expected_after_inv_shift_rows)
     
     def test_inv_sub_bytes(self):
         state = self._make_state(self.expected_after_inv_shift_rows)
-        inv_sub_bytes(state)
+        state = inv_sub_bytes(state)
         result = self._flatten_state(state)
         self.assertEqual(result, self.expected_after_inv_sub_bytes)
     
     def test_inv_mix_columns(self):
         state = self._make_state(self.expected_after_inv_add_round_key_2)
-        inv_mix_columns(state)
+        state = inv_mix_columns(state)
         result = self._flatten_state(state)
         self.assertEqual(result, self.exptected_after_inv_mix_columns)
     
     def test_full_decryption(self):
         decrypted, first_key = inv_cypher(self.crypted_block, self.key)
         self.assertEqual(decrypted, self.expected_plaintext)
-        self.assertEqual(first_key, self.key)
+        self.assertEqual(first_key, self.expected_key)
 
 if __name__ == "__main__":
     unittest.main()

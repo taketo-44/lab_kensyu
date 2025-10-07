@@ -50,6 +50,11 @@ Nk = K // 32 #4, 6, 8
 Nr = Nk + 6 #10, 12, 14
 Nb = 4
 
+def make_state(flat):
+    return [[flat[r + 4 * c] for c in range(4)] for r in range(4)]
+
+def flatten_state(state):
+    return [state[r][c] for c in range(4) for r in range(4)]
 
 def add(a, b):
     return a ^ b
@@ -65,9 +70,6 @@ def mult(a, b):
             a ^= 0x1b
         b >>= 1
     return p
-
-def expand(array):
-    return [array[j][i] for i in range(Nb) for j in range(Nb)]
 
 def add_round_key(state, round_key):
     for r in range(Nb):
@@ -146,7 +148,6 @@ def key_expansion(key):
         word[i] = [word[i - Nk][j] ^ temp[j] for j in range(4)]
     return word
 
-
 def inv_key_expansion(key):
     word = [[] for _ in range(Nb * (Nr + 1))]
     for i in range(Nk):
@@ -163,10 +164,9 @@ def inv_key_expansion(key):
         word[i] = [word[i + Nk][j] ^ temp[j] for j in range(4)]
     return word
 
-
 def cypher(input_bytes, key):
     assert len(input_bytes) == 16
-    state = [[input_bytes[c * Nb + r] for c in range(Nb)] for r in range(Nb)] # 4x4 matrix
+    state = make_state(input_bytes)
     word = key_expansion(key)
 
     state = add_round_key(state, word[0:Nb])
@@ -178,14 +178,13 @@ def cypher(input_bytes, key):
     state = sub_bytes(state)
     state = shift_rows(state)
     state = add_round_key(state, word[(Nr) * Nb:(Nr + 1) * Nb])
-    output = [state[r][c] for c in range(Nb) for r in range(Nb)] #transpose
+    output = flatten_state(state)
     return output, [v for sublist in word[-Nb:] for v in sublist]
-
 
 def inv_cypher(input_bytes, key):
     assert len(input_bytes) == 16
 
-    state = [[input_bytes[c * Nb + r] for c in range(Nb)] for r in range(Nb)] # 4x4 matrix
+    state = make_state(input_bytes)
     word = inv_key_expansion(key)
 
     state = add_round_key(state, word[Nr * Nb:(Nr + 1) * Nb])
@@ -197,5 +196,5 @@ def inv_cypher(input_bytes, key):
     state = inv_sub_bytes(state)
     state = inv_shift_rows(state)
     state = add_round_key(state, word[0:Nb])
-    output = [state[r][c] for c in range(Nb) for r in range(Nb)] #transpose
+    output = flatten_state(state)
     return output, [v for sublist in word[0:Nb] for v in sublist]
