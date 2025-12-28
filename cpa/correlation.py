@@ -1,5 +1,4 @@
 import numpy as np
-from graph import plot_from_data
 def load_traces(file_paths, dtype=np.float64):
     #load all traces from file paths
     return np.concatenate([np.loadtxt(p, delimiter=',', dtype=dtype) for p in file_paths])

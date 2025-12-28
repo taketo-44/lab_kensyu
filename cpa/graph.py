@@ -51,4 +51,8 @@ def plot_from_data(data, h = None, output_path="graph.png"):
     plt.savefig(output_path)
     plt.close()
 
-plot_first_line('wave_data/EMwavedata10000/aes_tv_0000001-0005000_power.csv')
+from correlation import load_traces
+path = 'wave_data/EMwavedata30000/aes_tv_0000001-0005000_power.csv'
+data = load_traces([path])
+for i, line in enumerate(data[:10]):
+    plot_from_data([line], output_path='img_test/' + os.path.basename(path) + f'_line_{i}.png')
