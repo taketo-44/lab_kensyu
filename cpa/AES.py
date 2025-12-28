@@ -56,21 +56,6 @@ def make_state(flat):
 def flatten_state(state):
     return [state[r][c] for c in range(4) for r in range(4)]
 
-def add(a, b):
-    return a ^ b
-
-def mult(a, b):
-    p = 0
-    for _ in range(8):
-        if b & 1:
-            p ^= a
-        high_bit = a & 0x80
-        a = (a << 1) % 0x100
-        if high_bit:
-            a ^= 0x1b
-        b >>= 1
-    return p
-
 def add_round_key(state, round_key):
     for r in range(Nb):
         for c in range(Nb):
