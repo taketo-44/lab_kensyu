@@ -3,8 +3,8 @@ def load_traces(file_paths, dtype=np.float64):
     #load all traces from file paths
     return np.concatenate([np.loadtxt(p, delimiter=',', dtype=dtype) for p in file_paths])
 
-def compute_correlation(num_traces = 10000):
-    window_for_each_traces = {10000: (2850, 2900), 30000: (1650, 1850)}
+def compute_correlation(num_traces = 30000, window = None):
+    window_for_each_traces = {10000: (2800, 3200), 30000: (2080, 2100)}
     traces_file_path = {10000: ["wave_data/EMwavedata10000/aes_tv_0000001-0005000_power.csv",
                             "wave_data/EMwavedata10000/aes_tv_0005001-0010000_power.csv"],
                         30000: ["wave_data/EMwavedata30000/aes_tv_0000001-0005000_power.csv",
@@ -16,11 +16,10 @@ def compute_correlation(num_traces = 10000):
                         }
     window = window_for_each_traces[num_traces]
     traces = load_traces(traces_file_path[num_traces])
-    plot_from_data(traces)
     ret = []
 
-    #leakage = traces[:, window[0]:window[1]].max(axis=1)
-    leakage = traces[:, window[0]:window[1]].mean(axis=1)
+    leakage = traces[:, window[0]:window[1]].max(axis=1)
+    #leakage = traces[:, window[0]:window[1]].mean(axis=1)
     
     for bytes in range(16):
 
@@ -39,7 +38,7 @@ def compute_correlation(num_traces = 10000):
         max_v = float(pearson[max_k])
         #debug
         new_p = sorted([(hex(k), v) for k, v in enumerate(pearson)], key=lambda x: x[1], reverse=True)
-        print(new_p[:5])
+        print([i for i, v in new_p[:7]])
 
         max_k = hex(max_k)[2:].zfill(2)
         print(f"Byte {bytes}: Max Pearson Correlation = {round(max_v, 4)} (key = {max_k})")

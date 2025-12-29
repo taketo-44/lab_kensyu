@@ -1,9 +1,15 @@
 from AES import inv_key_expansion
 from correlation import compute_correlation
 
+correct_round_key = ["0xd0", "0x14", "0xf9", "0xa8", "0xc9", "0xee", "0x25", "0x89", "0xe1", "0x3f", "0xc", "0xc8", "0xb6", "0x63", "0xc", "0xa6"]
 def restore_key():
     round_key_10 = [int(b, 16) for b, _ in compute_correlation(num_traces=30000)]
     print("10th Round Key:", [hex(b) for b in round_key_10])
+    cnt = 0
+    for i, n in enumerate(round_key_10):
+        if str(hex(n)) == correct_round_key[i]:
+            cnt += 1
+    print(f"Matched Bytes: {cnt} / 16")
     assert round_key_10 == [0xd0, 0x14, 0xf9, 0xa8, 0xc9, 0xee, 0x25, 0x89, 0xe1, 0x3f, 0xc, 0xc8, 0xb6, 0x63, 0xc, 0xa6], "10th round key restoration failed!"
     word = inv_key_expansion(round_key_10)
     secret_key = [v for sublist in word[0:4] for v in sublist]
